@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block title %}Agregar Participante{% endblock %}
+{% block content %}
+<h1>👤 Agregar Participante</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar</button>
+</form>
+
+<hr>
+
+<section>
+  <h2>📋 Participantes registrados ({{ participants|length }})</h2>
+  {% if participants %}
+    <table role="grid">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Puntos</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for participant in participants %}
+          <tr>
+            <td><a href="{% url 'participant_detail' participant.id %}">{{ participant.name }}</a></td>
+            <td>{{ participant.points|default:0 }}</td>
+            <td>
+              <a href="{% url 'add_points' %}?participant={{ participant.id }}">Anotar puntos</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No hay participantes registrados aún.</p>
+  {% endif %}
+</section>
+{% endblock %}

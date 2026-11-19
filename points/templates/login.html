@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block title %}Iniciar Sesión{% endblock %}
+{% block content %}
+<h1>🔑 Iniciar Sesión</h1>
+
+<p>
+    Para <strong>agregar participantes</strong> y <strong>anotar puntos</strong> debes iniciar sesión
+    con una cuenta de la Sala de Videojuegos.
+</p>
+
+<form method="post" class="login-form">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <article class="login-error">
+            <p><strong>❌ {{ form.non_field_errors.0 }}</strong></p>
+        </article>
+    {% endif %}
+
+    <p>
+        <label for="{{ form.username.id_for_label }}">Usuario</label>
+        {{ form.username }}
+    </p>
+    <p>
+        <label for="{{ form.password.id_for_label }}">Contraseña</label>
+        {{ form.password }}
+    </p>
+
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit">Entrar</button>
+</form>
+
+<p style="opacity:0.75;">
+    ¿No tienes cuenta? Pídele al personal de la Sala de Videojuegos que te cree una desde el panel de administración.
+</p>
+{% endblock %}

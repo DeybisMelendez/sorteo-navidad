@@ -30,20 +30,36 @@
     <nav class="container">
       <ul>
         <li>
-          <a href="{% url 'raffle_list' %}">Sorteos</a>
+          <a href="{% url 'home' %}">Inicio</a>
         </li>
         <li>
-          <a href="{% url 'top_participants' %}">Top</a>
+          <a href="{% url 'leaderboard' %}">Ranking</a>
         </li>
         <li>
-          <a href="{% url 'daily_winners_history' %}">Historial</a>
+          <a href="{% url 'prizes' %}">Premios</a>
         </li>
         {% if user.is_authenticated %}
           <li>
-            <a href="{% url 'add_participant' %}">Agregar persona</a>
+            <a href="{% url 'add_points' %}">Anotar puntos</a>
           </li>
           <li>
-            <a href="{% url 'add_raffle_number' %}">Anotar numero</a>
+            <a href="{% url 'add_participant' %}">Agregar persona</a>
+          </li>
+          {% if user.is_staff %}
+            <li>
+              <a href="{% url 'prizes' %}">Administrar premios</a>
+            </li>
+          {% endif %}
+          <li class="nav-user">
+            <span>👤 {{ user.get_username }}</span>
+            <form method="post" action="{% url 'logout' %}" class="logout-form">
+              {% csrf_token %}
+              <button type="submit">Salir</button>
+            </form>
+          </li>
+        {% else %}
+          <li>
+            <a href="{% url 'login' %}">Iniciar sesión</a>
           </li>
         {% endif %}
       </ul>
@@ -69,6 +85,7 @@
     </main>
     <footer class="container" style="text-align:center; margin-top:2rem;">
       <div id="christmas-tree">🎄</div>
+      <p style="opacity:0.7;">Sala de Videojuegos Deybis · Navidad 2026</p>
     </footer>
     <script src="{% static 'snowstorm.js' %}"></script>
   </body>

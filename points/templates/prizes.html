@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block title %}Premios del Top {{ prize_count }}{% endblock %}
+
+{% block content %}
+<h1>🎁 Premios del Top {{ prize_count }}</h1>
+
+{% if is_award_day %}
+  <p><strong>🎉 ¡Hoy 25 de diciembre entregamos los premios del top {{ prize_count }}!</strong></p>
+{% elif days_to_award > 0 %}
+  <p>Faltan <strong>{{ days_to_award }}</strong> días para la entrega de premios ({{ award_date }}).</p>
+{% endif %}
+
+<p>
+  Los <strong>{{ prize_count }} primeros lugares</strong> de la clasificación de puntos reciben un premio sorpresa cada uno.
+  El ganador de cada puesto se anuncia el {{ award_date }}.
+</p>
+
+<div class="prize-grid">
+  {% for slot in slots %}
+    <article class="prize-card">
+      <span class="prize-position">{{ slot.position }}º lugar</span>
+      {% if slot.prize %}
+        <h3>{{ slot.prize.name }}</h3>
+        {% if slot.prize.description %}
+          <p>{{ slot.prize.description }}</p>
+        {% endif %}
+        {% if slot.prize.image %}
+          <img src="{{ slot.prize.image.url }}" alt="{{ slot.prize.name }}">
+        {% endif %}
+        {% if slot.prize.winner %}
+          <p class="prize-winner">🏅 Ganador: <strong>{{ slot.prize.winner.name }}</strong></p>
+          {% if slot.prize.claimed %}
+            <p class="badge-claimed">✅ Premio reclamado</p>
+          {% else %}
+            <p class="badge-pending">⏳ Pendiente de reclamo</p>
+          {% endif %}
+        {% elif slot.suggested %}
+          <p class="prize-pending-winner">Actual líder: <strong>{{ slot.suggested.name }}</strong></p>
+        {% else %}
+          <p class="prize-pending-winner">Por definir</p>
+        {% endif %}
+
+        {% if user.is_staff %}
+          <div class="staff-actions">
+            <a href="{% url 'edit_prize' slot.position %}" role="button">⚙️ Configurar</a>
+            {% if slot.prize.winner and not slot.prize.claimed %}
+              <form method="post" action="{% url 'claim_prize' slot.prize.id %}">
+                {% csrf_token %}
+                <button type="submit">🏆 Marcar reclamado</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% else %}
+        <h3>Premio por anunciar</h3>
+        <p class="prize-pending-winner">El staff todavía no define este premio.</p>
+        {% if user.is_staff %}
+          <div class="staff-actions">
+            <a href="{% url 'edit_prize' slot.position %}" role="button">⚙️ Configurar premio</a>
+          </div>
+        {% endif %}
+      {% endif %}
+    </article>
+  {% endfor %}
+</div>
+
+{% if user.is_staff %}
+  <hr>
+  <section>
+    <h2>🛠️ Administración de premios</h2>
+    <form method="post" action="{% url 'assign_top_prizes' %}">
+      {% csrf_token %}
+      <button type="submit">🏆 Asignar el top {{ prize_count }} actual a los premios</button>
+    </form>
+    <p style="opacity:0.75;">
+      Asigna el ganador de cada puesto según la clasificación actual de puntos.
+      Puedes cambiarlo después configurando el premio.
+    </p>
+  </section>
+{% endif %}
+{% endblock %}

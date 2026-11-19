@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "raffle",
+    "points",
 ]
 
 MIDDLEWARE = [
@@ -128,3 +128,13 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Autenticación: las cuentas las crea el staff desde el panel de administración.
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
+
+# Cantidad de premios que se entregan al top N de la clasificación de puntos.
+# Puedes cambiarla (por ejemplo a 3 o a 10) y luego ejecutar:
+#   .venv/bin/python manage.py sync_prizes --delete-extra
+PRIZE_SLOTS = 10

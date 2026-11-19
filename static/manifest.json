@@ -1,7 +1,7 @@
 {
-  "name": "Sorteo navideño Sala de Juegos Deybis",
-  "short_name": "Sorteo Videojuegos Deybis",
-  "description": "Sorteos navideños de la Sala de Juegos Deybis",
+  "name": "Puntos Navideños - Sala de Videojuegos Deybis",
+  "short_name": "Puntos Deybis",
+  "description": "Acumulación de puntos para el top 5 de Navidad de la Sala de Videojuegos Deybis",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#13161E",

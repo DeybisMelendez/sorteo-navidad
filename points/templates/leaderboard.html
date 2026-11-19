@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block title %}Ranking de Puntos{% endblock %}
+
+{% block content %}
+<h1>🏆 Ranking de Puntos</h1>
+<p>Clasificación de los participantes según los puntos acumulados (1 punto por hora jugada).</p>
+
+{% if podium %}
+  <div class="podium">
+    {% for rank, participant in podium %}
+      <article class="podium-card place-{{ rank }}">
+        <span class="podium-place">{{ rank }}</span>
+        <h3>{{ participant.name }}</h3>
+        <p class="podium-points">{{ participant.points }} pts</p>
+      </article>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% if ranked %}
+  <table role="grid">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nombre</th>
+        <th>Puntos</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rank, participant in ranked %}
+      <tr {% if forloop.first %}class="highlight"{% endif %}>
+        <td>{{ rank }}</td>
+        <td><a href="{% url 'participant_detail' participant.id %}">{{ participant.name }}</a></td>
+        <td><strong>{{ participant.points }}</strong></td>
+        <td>
+          {% if participant.id in prizes_by_participant %}
+            <span title="Premios ganados">🎁</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p>
+    Puntos acumulados en total: <strong>{{ total_points }}</strong> ·
+    Entrega de premios: <strong>{{ award_date }}</strong>
+    {% if days_to_award > 0 %} · Faltan {{ days_to_award }} días{% endif %}
+  </p>
+{% else %}
+  <p>No hay puntos anotados aún. ¡Se viene la carrera por el primer lugar! 🎄</p>
+{% endif %}
+{% endblock %}

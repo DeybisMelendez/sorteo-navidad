@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block title %}{{ participant.name }}{% endblock %}
+
+{% block content %}
+<h1>🎮 {{ participant.name }}</h1>
+
+<section>
+  <p>
+    Puntos acumulados: <strong>{{ total_points }}</strong>
+    {% if rank %} · Puesto en el ranking: <strong>#{{ rank }}</strong>{% endif %}
+  </p>
+  {% if participant.notes %}
+    <p><em>{{ participant.notes }}</em></p>
+  {% endif %}
+  {% if prizes %}
+    <p>
+      🎁 Premios ganados:
+      {% for prize in prizes %}
+        <strong>{{ prize.position }}º lugar ({{ prize.name }})</strong>{% if not forloop.last %}, {% endif %}
+      {% endfor %}
+    </p>
+  {% endif %}
+</section>
+
+<hr>
+
+<section>
+  <h2>📜 Historial de puntos</h2>
+  {% if entries %}
+    <table role="grid">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Puntos</th>
+          <th>Nota</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+          <tr>
+            <td>{{ entry.created_at }}</td>
+            <td>+{{ entry.points }}</td>
+            <td>{{ entry.note|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Este participante todavía no tiene puntos anotados. ❄️</p>
+  {% endif %}
+</section>
+{% endblock %}

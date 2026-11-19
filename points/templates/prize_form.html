@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}Configurar Premio {{ position }}{% endblock %}
+{% block content %}
+<h1>🎁 Configurar premio del {{ position }}º lugar</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar premio</button>
+</form>
+
+<hr>
+<p><a href="{% url 'prizes' %}">← Volver a los premios</a></p>
+{% endblock %}

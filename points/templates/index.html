@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block title %}Acumulación de Puntos{% endblock %}
+{% block content %}
+
+<section>
+    <h1>🎄 Puntos Navideños 2026 - Sala de Videojuegos Deybis</h1>
+    <img src="{% static 'foto.png' %}" alt="Foto de Deybis Melendez con Regalos">
+    <p>
+        Hola, soy <strong>Deybis Melendez</strong>. Este año en la
+        <strong>Sala de Videojuegos Deybis</strong> la dinámica cambió:
+        ya no hay rifas de números, ¡ahora se <strong>acumulan puntos</strong>!
+    </p>
+    <p>
+        Por cada <strong>hora jugada</strong> se anota <strong>1 punto</strong> a nombre del jugador.
+        La acumulación va desde el <strong>1 de noviembre</strong> hasta el <strong>24 de diciembre</strong>.
+    </p>
+    <p>
+        🎁 El <strong>25 de diciembre</strong> se entregan los premios: los <strong>{{ prize_count }} primeros lugares</strong>
+        de la tabla reciben un premio sorpresa cada uno.
+    </p>
+
+    {% if is_award_day %}
+        <p><strong>🎉 ¡Hoy es el gran día! Hoy se entregan los premios del top {{ prize_count }}.</strong></p>
+    {% elif period_open %}
+        <p>⏳ Faltan <strong>{{ days_to_award }}</strong> días para la entrega de premios.</p>
+    {% else %}
+        <p>🔔 La acumulación de puntos ya se cerró. ¡Prepárate para la entrega de premios!</p>
+    {% endif %}
+</section>
+
+<hr>
+
+<section>
+    <h1>🏆 Top {{ prize_count }} - Acumulación de puntos</h1>
+    {% if top_ranking %}
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Puntos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rank, participant in top_ranking %}
+                <tr {% if forloop.first %}class="highlight"{% endif %}>
+                    <td>{{ rank }}</td>
+                    <td><a href="{% url 'participant_detail' participant.id %}">{{ participant.name }}</a></td>
+                    <td><strong>{{ participant.points }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p><a href="{% url 'leaderboard' %}">Ver la clasificación completa →</a></p>
+    {% else %}
+        <p>Todavía no hay puntos anotados. ¡Se viene la carrera por el primer lugar! 🎄</p>
+    {% endif %}
+</section>
+
+<hr>
+
+<section>
+    <h1>🎁 Premios del top {{ prize_count }}</h1>
+    {% if prizes %}
+        <div class="prize-grid">
+            {% for prize in prizes %}
+                <article class="prize-card">
+                    <span class="prize-position">{{ prize.position }}º lugar</span>
+                    <h3>{{ prize.name }}</h3>
+                    {% if prize.image %}
+                        <img src="{{ prize.image.url }}" alt="{{ prize.name }}">
+                    {% endif %}
+                    {% if prize.winner %}
+                        <p>🏅 Ganador: <strong>{{ prize.winner.name }}</strong></p>
+                    {% else %}
+                        <p>Por definir</p>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Los premios se anunciarán pronto. ¡Manténganse atentos! 🎄</p>
+    {% endif %}
+    <p><a href="{% url 'prizes' %}">Ver todos los premios →</a></p>
+</section>
+
+<hr>
+
+<section>
+    <h1>📊 Resumen</h1>
+    <ul>
+        <li>Participantes registrados: <strong>{{ participant_count }}</strong></li>
+        <li>Puntos acumulados en total: <strong>{{ total_points }}</strong></li>
+        <li>Fecha de entrega de premios: <strong>{{ award_date }}</strong></li>
+    </ul>
+</section>
+
+{% endblock %}

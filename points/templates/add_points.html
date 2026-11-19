@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+{% block title %}Anotar Puntos{% endblock %}
+{% block content %}
+<h1>✨ Anotar Puntos</h1>
+
+{% if not period_open %}
+  <article>
+    <p><strong>⛔ La acumulación de puntos está cerrada.</strong> No se pueden anotar puntos nuevos.</p>
+  </article>
+{% endif %}
+
+<p>Cada <strong>hora jugada</strong> equivale a <strong>1 punto</strong>.</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <datalist id="horas-comunes">
+      <option value="1"></option>
+      <option value="2"></option>
+      <option value="3"></option>
+      <option value="4"></option>
+      <option value="5"></option>
+    </datalist>
+    <button type="submit" {% if not period_open %}disabled{% endif %}>Anotar puntos</button>
+</form>
+
+<hr>
+
+<section>
+  <h2>🕒 Últimos registros</h2>
+  {% if recent_entries %}
+    <table role="grid">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Participante</th>
+          <th>Puntos</th>
+          <th>Nota</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in recent_entries %}
+          <tr>
+            <td>{{ entry.created_at }}</td>
+            <td>{{ entry.participant.name }}</td>
+            <td>+{{ entry.points }}</td>
+            <td>{{ entry.note|default:"—" }}</td>
+            <td>
+              <form method="post" action="{% url 'delete_point_entry' entry.id %}">
+                {% csrf_token %}
+                <button type="submit" class="secondary" title="Eliminar este registro">🗑️</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No hay puntos anotados aún.</p>
+  {% endif %}
+</section>
+
+<hr>
+
+<section>
+  <h2>📋 Participantes y sus puntos</h2>
+  {% if participants %}
+    <table role="grid">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Puntos</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for participant in participants %}
+          <tr>
+            <td><a href="{% url 'participant_detail' participant.id %}">{{ participant.name }}</a></td>
+            <td>{{ participant.points|default:0 }}</td>
+            <td><a href="{% url 'add_points' %}?participant={{ participant.id }}">Anotar</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>
+      No hay participantes registrados.
+      <a href="{% url 'add_participant' %}">Agrega a alguien primero</a>.
+    </p>
+  {% endif %}
+</section>
+{% endblock %}
