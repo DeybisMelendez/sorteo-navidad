@@ -1,0 +1,7 @@
+{% spaceless %}
+<div class="points-stepper" data-min="{{ widget.attrs.min|default:"1" }}" data-max="{{ widget.attrs.max|default:"24" }}">
+  <button type="button" class="stepper-btn" data-step="-1" aria-label="Restar un punto">&minus;</button>
+  <input type="number" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value|stringformat:'s' }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+  <button type="button" class="stepper-btn" data-step="1" aria-label="Sumar un punto">+</button>
+</div>
+{% endspaceless %}

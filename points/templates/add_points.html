@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% load static %}
 {% block title %}Anotar Puntos{% endblock %}
 {% block content %}
 <h1>✨ Anotar Puntos</h1>
@@ -9,19 +10,57 @@
   </article>
 {% endif %}
 
+{% if not participants %}
+  <article class="aviso">
+    <p><strong>⚠️ Todavía no hay participantes registrados.</strong></p>
+    <p>Procede a registrarlo primero para poder anotarle puntos.</p>
+    <p><a href="{% url 'add_participant' %}?next=anotar">➕ Registrar un jugador nuevo</a></p>
+  </article>
+{% endif %}
+
 <p>Cada <strong>hora jugada</strong> equivale a <strong>1 punto</strong>.</p>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <datalist id="horas-comunes">
-      <option value="1"></option>
-      <option value="2"></option>
-      <option value="3"></option>
-      <option value="4"></option>
-      <option value="5"></option>
-    </datalist>
-    <button type="submit" {% if not period_open %}disabled{% endif %}>Anotar puntos</button>
+<form method="post" id="form-puntos">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <article class="aviso error">
+      {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+    </article>
+  {% endif %}
+
+  <div class="campo">
+    <label for="{{ form.participant.id_for_label }}">{{ form.participant.label }}</label>
+    {{ form.participant }}
+    {% for error in form.participant.errors %}<small class="error">{{ error }}</small>{% endfor %}
+    <small>
+      ¿El jugador no aparece en la lista?
+      <a href="{% url 'add_participant' %}?next=anotar">Regístralo primero</a>
+      y vuelve a anotarle puntos.
+    </small>
+  </div>
+
+  <div class="campo">
+    <label for="{{ form.points.id_for_label }}">{{ form.points.label }}</label>
+    {{ form.points }}
+    <div class="quick-points">
+      <button type="button" class="secondary" data-quick-points="1" data-target="{{ form.points.id_for_label }}">1 h</button>
+      <button type="button" class="secondary" data-quick-points="2" data-target="{{ form.points.id_for_label }}">2 h</button>
+      <button type="button" class="secondary" data-quick-points="3" data-target="{{ form.points.id_for_label }}">3 h</button>
+      <button type="button" class="secondary" data-quick-points="4" data-target="{{ form.points.id_for_label }}">4 h</button>
+      <button type="button" class="secondary" data-quick-points="5" data-target="{{ form.points.id_for_label }}">5 h</button>
+    </div>
+    <small>{{ form.points.help_text }}</small>
+    <small>Para bajar los puntos ya acumulados, borra el registro en «Últimos registros».</small>
+  </div>
+
+  <div class="campo">
+    <label for="{{ form.note.id_for_label }}">{{ form.note.label }} <em>(opcional)</em></label>
+    {{ form.note }}
+    {% for error in form.note.errors %}<small class="error">{{ error }}</small>{% endfor %}
+  </div>
+
+  <button type="submit" {% if not period_open %}disabled{% endif %}>Anotar puntos</button>
 </form>
 
 <hr>
@@ -87,8 +126,12 @@
   {% else %}
     <p>
       No hay participantes registrados.
-      <a href="{% url 'add_participant' %}">Agrega a alguien primero</a>.
+      <a href="{% url 'add_participant' %}?next=anotar">Procede a registrarlo primero</a>.
     </p>
   {% endif %}
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'points.js' %}"></script>
 {% endblock %}

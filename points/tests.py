@@ -9,6 +9,7 @@ from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from .forms import PointEntryForm
 from .models import Participant, PointEntry, Prize, prize_slot_count
 
 
@@ -255,6 +256,81 @@ class PointsEntryTests(TestCase):
         response = self.client.get(reverse('delete_point_entry', args=[entry.id]))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(PointEntry.objects.count(), 1)
+
+
+class PointsStepperTests(TestCase):
+    """El campo de puntos se maneja con botones −/+ (uso táctil)."""
+
+    def setUp(self):
+        self.staff = User.objects.create_user('staff', password='x', is_staff=True)
+        self.client.force_login(self.staff)
+        self.ana = make_participant('Ana', 2)
+
+    def test_form_renders_stepper_buttons(self):
+        form = PointEntryForm()
+        html = str(form['points'])
+        self.assertIn('points-stepper', html)
+        self.assertIn('data-step="-1"', html)
+        self.assertIn('data-step="1"', html)
+
+    def test_stepper_keeps_the_valid_range(self):
+        widget = PointEntryForm().fields['points'].widget
+        self.assertEqual(widget.attrs['min'], 1)
+        self.assertEqual(widget.attrs['max'], 24)
+    def test_page_shows_stepper_and_quick_buttons(self):
+        response = self.client.get(reverse('add_points'))
+        self.assertContains(response, 'points-stepper')
+        self.assertContains(response, 'data-quick-points="1"')
+        self.assertContains(response, 'data-quick-points="5"')
+
+    def test_page_offers_link_to_register_new_participant(self):
+        response = self.client.get(reverse('add_points'))
+        self.assertContains(response, reverse('add_participant'))
+        self.assertContains(response, 'Regístralo primero')
+
+    def test_page_warns_when_there_are_no_participants(self):
+        Participant.objects.all().delete()
+        response = self.client.get(reverse('add_points'))
+        self.assertContains(response, 'Procede a registrarlo primero')
+
+    def test_points_are_still_saved_through_the_form(self):
+        self.client.post(
+            reverse('add_points'),
+            {'participant': self.ana.id, 'points': 4, 'note': ''},
+            follow=True,
+        )
+        self.assertEqual(PointEntry.objects.latest('id').points, 4)
+        self.assertEqual(self.ana.total_points, 6)
+
+
+class RegisterParticipantFlowTests(TestCase):
+    """Registrar un jugador y volver al formulario de puntos."""
+
+    def setUp(self):
+        self.staff = User.objects.create_user('staff', password='x', is_staff=True)
+        self.client.force_login(self.staff)
+
+    def test_new_participant_returns_to_the_points_form(self):
+        response = self.client.post(
+            f"{reverse('add_participant')}?next=anotar",
+            {'name': 'Beto', 'notes': '', 'next': 'anotar'},
+        )
+        beto = Participant.objects.get(name='Beto')
+        self.assertRedirects(
+            response,
+            f"{reverse('add_points')}?participant={beto.pk}",
+        )
+
+    def test_new_participant_stays_on_the_form_by_default(self):
+        response = self.client.post(
+            reverse('add_participant'), {'name': 'Beto', 'notes': ''}
+        )
+        self.assertRedirects(response, reverse('add_participant'))
+
+    def test_registration_page_keeps_the_next_page(self):
+        response = self.client.get(f"{reverse('add_participant')}?next=anotar")
+        self.assertEqual(response.context['next_page'], 'anotar')
+        self.assertContains(response, 'value="anotar"')
 
 
 class AdminTests(TestCase):

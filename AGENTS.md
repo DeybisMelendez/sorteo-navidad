@@ -8,7 +8,7 @@ Christmas points race ("Puntos Navideños") for Sala de Videojuegos Deybis. Djan
 
 - `rifapp/` — project config only (`settings.py`, `urls.py`, `wsgi.py`, `asgi.py`). Root URLconf mounts `points.urls` at `/` and `admin/` at `/admin/`. The package name `rifapp` was kept from the raffle era because the WSGI/ASGI module path (`rifapp.wsgi`) may be referenced by the hosting config.
 - `points/` — the only app (was `raffle/` before the points rewrite). `models.py`, `views.py`, `forms.py`, `admin.py`, `urls.py`, `templates/`, `migrations/`, `tests.py`, `management/commands/sync_prizes.py`.
-- `static/` — flat asset dir served via `STATICFILES_DIRS` (`styles.css`, `snowstorm.js`, `manifest.json`, `icons/`, `foto.png`).
+- `static/` — flat asset dir served via `STATICFILES_DIRS` (`styles.css`, `snowstorm.js`, `points.js`, `manifest.json`, `icons/`, `foto.png`).
 - `db.sqlite3` — local DB, gitignored.
 
 ## Commands
@@ -83,6 +83,17 @@ Two different kinds of people are involved; do not mix them up:
 - Logout is a **POST form** (`LogoutView` in Django 6.1 only accepts POST); the nav shows the logged-in username and a "Salir" button.
 - The nav links for data entry appear for `user.is_authenticated`; the prize administration link only for `user.is_staff`.
 - Every state-changing action is a **POST with CSRF** (`delete_point_entry`, `assign_top_prizes`, `claim_prize`, logout). The raffle-era code mutated state over a plain GET link; that bug is gone.
+
+## Anotar puntos en el celular (stepper)
+
+La pantalla de `/anotar-puntos/` está pensada para el celular, así que el campo de puntos se maneja con botones en vez de escribir el número.
+
+- `points/forms.py` defines `PointsStepperWidget` (a `NumberInput` with `template_name = 'points/widgets/points_stepper.html'`) and `PointsField` (an `forms.IntegerField` with `min_value=1` / `max_value=24`).
+- The `points` field is **declared explicitly** on `PointEntryForm` because the model field is a `PositiveSmallIntegerField`, which forces `min=0` on the widget (the real range is 1–24 hours).
+- The widget template renders `[−] <input type="number"> [+]`. The buttons only work with JavaScript; without it the number input still works normally.
+- `static/points.js` (loaded through the layout's `{% block scripts %}`) increments/decrements the value, clamps it to 1–24, and handles the quick chips (`1 h` … `5 h`). An empty field only starts counting up, never down.
+- The **− button never lowers the accumulated total**: it only lowers the number that will be saved. To lower a total, delete the entry in "Últimos registros" (the 🗑️ button). The model still only stores positive entries.
+- Registering a new player from that page uses `?next=anotar`: `add_participant` then redirects to `/anotar-puntos/?participant=<id>` with the new player already selected. The page also warns when there are no participants yet.
 
 ## Migration / version notes
 

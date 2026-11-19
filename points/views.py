@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from .forms import ParticipantForm, PointEntryForm, PrizeForm
@@ -166,11 +167,16 @@ def participant_detail(request, participant_id):
 @login_required
 def add_participant(request):
     """Crea un nuevo participante (solo usuarios registrados)."""
+    # `next=anotar` vuelve al formulario de puntos con el jugador ya elegido.
+    next_page = request.POST.get('next') or request.GET.get('next', '')
+
     if request.method == 'POST':
         form = ParticipantForm(request.POST)
         if form.is_valid():
             participant = form.save()
             messages.success(request, f"Participante '{participant.name}' agregado correctamente.")
+            if next_page == 'anotar':
+                return redirect(f"{reverse('add_points')}?participant={participant.pk}")
             return redirect('add_participant')
         messages.error(request, "Ocurrió un error al guardar el participante. Verifica los datos.")
     else:
@@ -183,6 +189,7 @@ def add_participant(request):
     context = {
         'form': form,
         'participants': participants,
+        'next_page': next_page,
     }
     return render(request, 'add_participant.html', context)
 
